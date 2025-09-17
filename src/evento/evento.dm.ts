@@ -1,6 +1,7 @@
+import { Injectable } from "@nestjs/common";
 import { EventoEntity } from "./evento.entity";
 
-
+@Injectable()
 export class EventosArmazenados{
     #eventos: EventoEntity[] = [];  
 
