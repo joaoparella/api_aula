@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString } from "class-validator";
+import { DiaSemana } from "src/validacao/dia.validator";
 
 export class criaEventoDTO {
     @IsString()
@@ -11,6 +12,7 @@ export class criaEventoDTO {
 
     @IsString()
     @IsNotEmpty({message: 'O dia não pode ser vazio'})
+    @DiaSemana({message: 'O dia deve ser um dia da semana válido'})
     dia: string;
 
 }
