@@ -4,8 +4,10 @@ import { criaEventoDTO } from "./dto/criaEvento.dto";
 import { EventoEntity } from "./evento.entity";
 import {v4 as uuid} from 'uuid';
 import { alteraEventoDTO } from "./dto/alteraEvento.dto";
+import { ApiTags } from "@nestjs/swagger";
 
 @Controller('/eventos')
+@ApiTags('eventos')
 export class EventosController {
   constructor(private Eventos : EventosArmazenados){
 
