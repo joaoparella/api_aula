@@ -6,6 +6,7 @@ import { CriaUsuarioDTO } from "./dto/criaUsuario.dto";
 import { ListaUsuarioDTO } from "./dto/listaUsuario.dto";
 import { AlteraUsuarioDTO } from "./dto/alteraUsuario.dto";
 import { ApiTags } from "@nestjs/swagger";
+import { LoginDTO } from "./dto/login.dto";
 
 @Controller('/usuarios')
 @ApiTags('usuarios')
@@ -28,6 +29,21 @@ export class UsuarioController {
     };
     return retorno;
   }
+
+  @Post('/login')
+  async login(@Body() dadosLogin: LoginDTO) {
+        const usuarioLogado = this.Usuarios.loginUsuario(dadosLogin.email, dadosLogin.senha);   
+        if(usuarioLogado){
+            return {
+                usuario: usuarioLogado,
+                message: 'Login realizado com sucesso'
+            };
+        }
+        return {
+            message: 'Email ou senha inválidos'
+        };
+  }     
+
 
   @Get()
   async retornaUsuario(): Promise<ListaUsuarioDTO[]> {
