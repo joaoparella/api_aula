@@ -28,4 +28,21 @@ export class alteraEventoDTO {
         )
     dia: string;
 
+    @IsString()
+    @IsOptional()
+    @IsNotEmpty({message: 'Complemento não pode ser vazio'})
+    @ApiPropertyOptional({example: 'Número 123, Apto 45',
+                    description: 'Complemento do endereço do evento'}
+    )
+    complemento: string;
+
+
+    @IsString()
+    @IsOptional()
+    @IsNotEmpty({message: 'CEP não pode ser vazio'})
+    @ApiPropertyOptional({example: '12345-678',
+                    description: 'CEP do endereço do evento'}
+    )
+    cep: string;
+
 }

@@ -25,4 +25,19 @@ export class criaEventoDTO {
     )
     dia: string;
 
+    @IsString()
+    @IsNotEmpty({message: 'Complemento não pode ser vazio'})
+    @ApiProperty({example: 'Número 123, Apto 45',
+                       description: 'Complemento do endereço do evento'}
+    )
+    complemento: string;
+
+
+    @IsString()
+    @IsNotEmpty({message: 'CEP não pode ser vazio'})
+    @ApiProperty({example: '12345-678',
+                    description: 'CEP do endereço do evento'}
+    )
+    cep: string;
+
 }

@@ -5,11 +5,13 @@ import { EventoEntity } from "./evento.entity";
 import {v4 as uuid} from 'uuid';
 import { alteraEventoDTO } from "./dto/alteraEvento.dto";
 import { ApiTags } from "@nestjs/swagger";
+import { HttpModule, HttpService } from "@nestjs/axios";
+import { lastValueFrom, map } from "rxjs";
 
 @Controller('/eventos')
 @ApiTags('eventos')
 export class EventosController {
-  constructor(private Eventos : EventosArmazenados){
+  constructor(private Eventos : EventosArmazenados, private httpService: HttpService){
 
   }
 
@@ -33,7 +35,17 @@ export class EventosController {
 
   @Post()
   async criarEvento(@Body() dadosEvento:criaEventoDTO){
-    var novoEvento = new EventoEntity(uuid(),dadosEvento.nome,dadosEvento.horario,dadosEvento.dia);
+    var retornoCep = await lastValueFrom(this.httpService
+        .get(`https://viacep.com.br/ws/${dadosEvento.cep}/json/`)
+        .pipe(
+            map((response) => response.data)
+        )
+    );
+
+
+    var novoEvento = new EventoEntity(uuid(),dadosEvento.nome,dadosEvento.horario,dadosEvento.dia, 
+                                    retornoCep.logradouro, dadosEvento.complemento, retornoCep.bairro,
+                                    retornoCep.localidade, retornoCep.uf, dadosEvento.cep);
     this.Eventos.adicionarEvento(novoEvento);
     var retorno = {
         novoEvento,
