@@ -25,6 +25,23 @@ export class GeneroService {
         return genero
     }
 
+    async localizaNome(nome: string): Promise<GENERO> {
+        const genero = await this.generoRepository.findOne({
+            where: { NOME: nome },
+        });
+        if (!genero) {
+            throw new Error('Gênero não encontrado');
+        }
+        return genero
+    }
+
+    async BuscaGenero(nome: string): Promise<boolean> {
+        const genero = await this.generoRepository.findOne({
+            where: { NOME: nome },
+        });
+        return genero?true:false;
+    }
+
     async listarTodos(): Promise<GENERO[]> {    
         return this.generoRepository.find();
     }
