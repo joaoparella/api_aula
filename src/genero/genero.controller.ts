@@ -4,10 +4,12 @@ import { GENERO } from './genero.entity';
 import { CriaGeneroDTO } from './dto/criaGenero.dto';
 import { AlteraGeneroDTO } from './dto/alteraGenero.dto';
 import { RetornoPadraoDTO } from 'src/dto/retorno.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 
 
 @Controller('/genero')
+@ApiTags('genero')
 export class GeneroController {
     constructor(private readonly generoService: GeneroService) {}
 

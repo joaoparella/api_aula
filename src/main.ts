@@ -26,6 +26,7 @@ async function bootstrap() {
     .addTag('filme')
     .addTag('serie')
     .addTag('eventos')
+    .addTag('genero')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
