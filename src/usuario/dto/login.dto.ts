@@ -8,7 +8,7 @@ export class LoginDTO {
         @ApiPropertyOptional({example: 'joaosilva@joao.com.br',
             description: 'Email do usuário, deve ser único'}
             )
-        email: string;
+        EMAIL: string;
 
         @MinLength(6,{message: 'A senha deve ter no mínimo 6 caracteres'})
         @IsNotEmpty()
@@ -16,5 +16,5 @@ export class LoginDTO {
         @ApiPropertyOptional({example: 'senha123',  
             description: 'Senha do usuário, deve ter no mínimo 6 caracteres'}
             )
-        senha: string;
+        SENHA: string;
 }

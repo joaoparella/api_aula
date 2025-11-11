@@ -1,110 +1,153 @@
 import { Body, Controller, Delete, Get, InternalServerErrorException, NotFoundException, Param, Post, Put } from "@nestjs/common";
-import { UsuarioEntity } from "./usuario.entity";
-import { UsuariosArmazenados } from "./usuario.dm";
-import {v4 as uuid} from 'uuid';
 import { CriaUsuarioDTO } from "./dto/criaUsuario.dto";
-import { ListaUsuarioDTO } from "./dto/listaUsuario.dto";
+import { ListagemUsuariosDTO, ListaUsuarioDTO } from "./dto/listaUsuario.dto";
 import { AlteraUsuarioDTO } from "./dto/alteraUsuario.dto";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { LoginDTO } from "./dto/login.dto";
 import { RetornoPadraoDTO } from "src/dto/retorno.dto";
+import { USUARIOService } from "./usuario.service";
 
 @Controller('/usuarios')
 @ApiTags('usuarios')
 export class UsuarioController {
-  constructor(private Usuarios : UsuariosArmazenados){
-
-  }
-
-  @Post()
-  async criaUsuario(@Body() dadosUsuario: CriaUsuarioDTO): Promise<RetornoPadraoDTO> {    
-    try{
-        var novoUsuario = new UsuarioEntity(uuid(),dadosUsuario.nome,dadosUsuario.idade,
-                                dadosUsuario.cidade,dadosUsuario.email,
-                                dadosUsuario.telefone,dadosUsuario.senha);
+   constructor(private readonly usuarioService: USUARIOService){
         
-        
-        this.Usuarios.AdicionarUsuario(novoUsuario);
-        var retorno = new RetornoPadraoDTO(        
-            'Usuário criado com sucesso',
-            novoUsuario
-        );
-        return retorno;
     }
-    catch(error){
-        throw new InternalServerErrorException('Erro inesperado no servidor');
-    }
-  }
 
-  @Post('/login')
-  async login(@Body() dadosLogin: LoginDTO):Promise<RetornoPadraoDTO>{ 
-     try {
-        const usuarioLogado = this.Usuarios.loginUsuario(dadosLogin.email, dadosLogin.senha);   
-        if(usuarioLogado){
-            return new RetornoPadraoDTO(                
-                'Login realizado com sucesso',
-                usuarioLogado
-            );
+     @Post()//essa linha, seria um decorator para definir que a função é um metodo POST
+    //Para receber dados do body da requisição, deve utilizar o decorator de "Body", especificando depois a variavel
+    @ApiCreatedResponse({ description:'Retorna que houve sucesso na inclusão'})
+    @ApiResponse({status: 500, description:'Retorna que houve erro na inclusão.'})
+    @ApiResponse({status: 400, description:'Retorna que há algum dado inválido na requisição.'})
+    async criaUsuario(@Body() dadosUsuario: CriaUsuarioDTO): Promise <RetornoPadraoDTO>{       
+        //criação do objeto de usuário, aqui é criado um objeto específico desse usuário 
+        try{
+            return this.usuarioService.inserir(dadosUsuario) 
         }
-        return new RetornoPadraoDTO(
-            'Email ou senha inválidos',
-            null
-        );
-    } catch (error) {
-        
-      if(error.message === 'Usuário não encontrado'){
-        throw new NotFoundException(`Usuário com email ${dadosLogin.email} não encontrado`);
-      }
-      throw new InternalServerErrorException('Erro inesperado no servidor');
-    }
-  }     
-
-
-  @Get()
-  async retornaUsuario(): Promise<ListaUsuarioDTO[]> {
-
-      var usuariosListados = this.Usuarios.Usuarios;
-      const ListaRetorno = usuariosListados.map(
-          usuario => new ListaUsuarioDTO(
-              usuario.id,
-              usuario.nome,
-              usuario.email
-          )
-      );
-      return ListaRetorno;
-  }
-
-  @Put('/:id')
-  async alteraUsuario(@Param('id') id: string, @Body() dadosAtualizacao: AlteraUsuarioDTO) {
-    try {
-      const usuarioAtualizado = await this.Usuarios.atualizaUsuario(id, dadosAtualizacao);
-      return new RetornoPadraoDTO(     
-          'Usuário atualizado com sucesso',
-          usuarioAtualizado
-      );
-    } catch (error) {
-        
-      if(error.message === 'Usuário não encontrado'){
-        throw new NotFoundException(`Usuário com id ${id} não encontrado`);
-      }
-      throw new InternalServerErrorException('Erro inesperado no servidor');
-    }
-  }
-
-  @Delete('/:id')
-  async removeUsuario(@Param('id') id: string) {
-    try {
-      const usuarioRemovido = await this.Usuarios.removeUsuario(id);
-      return new RetornoPadraoDTO(     
-          'Usuário removido com sucesso',
-          usuarioRemovido
-      );
-    } catch (error) {
-        if(error.message === 'Usuário não encontrado'){
-            throw new NotFoundException(`Usuário com id ${id} não encontrado`);
+        catch(error){
+            throw new InternalServerErrorException('Erro inesperado no servidor : '+error.message);
         }
-        throw new InternalServerErrorException('Erro inesperado no servidor');
-
     }
-  }
+
+    @Post('/login')//linha que define o método post para login, nesse caso é idenficado o URL,
+    @ApiResponse({status: 201, description:'Retorna que houve sucesso na consulta'})    
+    @ApiResponse({status: 400, description:'Retorna que há algum dado inválido na requisição.'})
+    async fazerLogin(@Body() dadosLogin: LoginDTO){
+        //chamada da função de login
+        try{
+          var retornoLogin = await this.usuarioService.Login(dadosLogin.EMAIL,dadosLogin.SENHA)
+          //criação de retorno, onde caso a resposta seja true é retornado login efetuado, caso seja false, retorna email ou senha invalidos, também é retornado o usuário logado
+
+          var retorno = new RetornoPadraoDTO(retornoLogin.status?'Login efetuado, sucesso':'Email ou senha invalidos!',retornoLogin.usuario);        
+
+          return retorno;       
+        }
+        catch(error){
+            throw new InternalServerErrorException('Erro inesperado no servidor : '+error.message);
+        }
+        
+    }
+
+    @Put('/:id')//linha que define o método vai ser de alteração (put), nesse caso também é especificado um parametro na URL, por onde vai chegar o id do usuário
+    @ApiResponse({status: 200, description:'Retorna que houve sucesso na alteração'})
+    @ApiResponse({status: 500, description:'Retorna que houve erro na alteração.'})
+    @ApiResponse({status: 400, description:'Retorna que há algum dado inválido na requisição.'})
+    async alteraUsuario(@Body() dadosNovos: AlteraUsuarioDTO,@Param('id') id: string){//aqui é definido que vai receber dados tanto do body quanto da URL(param)
+        //aqui é chamada a função de alteração de usuário, onde ja é feita toda a modificação do usuário
+        try{
+          return this.usuarioService.alterar(id,dadosNovos)             
+        }
+        catch(error){
+            throw new InternalServerErrorException('Erro inesperado no servidor : '+error.message);
+        }
+    }
+
+
+    @Put('/assinatura/:dias/:id')//linha que define o método vai ser de alteração (put), nesse caso também é especificado um parametro na URL, por onde vai chegar o id do usuário
+    @ApiResponse({status: 200, description:'Retorna que houve sucesso na alteração'})
+    @ApiResponse({status: 500, description:'Retorna que houve erro na alteração.'})
+    @ApiResponse({status: 400, description:'Retorna que há algum dado inválido na requisição.'})
+    async adicionaAssinatura(@Param('id') id: string,@Param('dias') dias: string){//aqui é definido que vai receber dados tanto do body quanto da URL(param)
+        
+      try{
+        return this.usuarioService.adicionaAssinatura(id,Number(dias))
+      }
+      catch(error){
+          throw new InternalServerErrorException('Erro inesperado no servidor : '+error.message);
+      }
+        
+    }
+
+    @Delete('/:id')//linha que define o método vai ser de exclusão (delete), nesse caso também é especificado um parametro na URL, por onde vai chegar o id do usuário
+    @ApiResponse({status: 200, description:'Retorna que houve sucesso na exclusão'})
+    @ApiResponse({status: 500, description:'Retorna que houve erro na exclusão.'})
+    async removeUsuario(@Param('id') id: string){//aqui é definido que vai receber dados da URL(param)
+        //aqui é chamada a função de exclusão de usuário, onde ja é feita toda a exclusão do usuário
+        try{
+          return this.usuarioService.remover(id);   
+        }
+        catch(error){
+            throw new InternalServerErrorException('Erro inesperado no servidor : '+error.message);
+        }
+    }
+
+    @Get('/:ID')//criação de método GET, para retornar usuários filtrados pelo ID, onde é necessário passar o ID do usuário pelo url 
+    @ApiResponse({status: 200, description:'Retorna que houve sucesso na consulta'})
+    @ApiResponse({status: 500, description:'Retorna que houve erro na consulta.'})
+    async retornaUsuarioId(@Param('ID') ID:string){
+        //aqui é feita a pesquisa do usuário, depois é criado mapeado os dados desse usuário para um retorno padrão (lista usuario DTO)
+        try{
+        var usuariosListados = await this.usuarioService.listarID(ID);
+        const ListaRetorno = new ListaUsuarioDTO(usuariosListados.ID,
+                                                usuariosListados.NOME,
+                                                usuariosListados.EMAIL)
+                                                // usuariosListados.FOTO)
+
+        return {
+                Usuario: ListaRetorno
+            };
+        }
+        catch(error){
+            throw new InternalServerErrorException('Erro inesperado no servidor : '+error.message);
+        }
+    }
+
+    @Get('/assinatura/:ID')//criação de método GET, para retornar usuários filtrados pelo ID, onde é necessário passar o ID do usuário pelo url 
+    @ApiResponse({status: 200, description:'Retorna que houve sucesso na consulta'})
+    @ApiResponse({status: 500, description:'Retorna que houve erro na consulta.'})
+    async retornaAssinatura(@Param('ID') ID:string){
+        //aqui é feita a pesquisa do usuário, depois é criado mapeado os dados desse usuário para um retorno padrão (lista usuario DTO)
+        try{
+        return await this.usuarioService.retornaAssinatura(ID);
+        }        
+        catch(error){
+            throw new InternalServerErrorException('Erro inesperado no servidor : '+error.message);
+        }
+        
+    }
+
+    @Get()//aqui é criado um método GET sem nenhum tipo de recepção de dados, onde é retornada uma lista de uusários
+    @ApiResponse({status: 200, description:'Retorna que houve sucesso na consulta'})
+    async retornaUsuario(): Promise <ListagemUsuariosDTO>{
+        //Aqui são pesquisados os usuários a serem listados, depois é feito um mapeamento de dados para retornar as informações no padrão de resposta esperado (listaUsuarioDTO)
+        try{
+          var usuariosListados = await this.usuarioService.listar();
+          const ListaRetorno = usuariosListados.map(
+              usuario => new ListaUsuarioDTO(
+                  usuario.ID,
+                  usuario.NOME,
+                  usuario.EMAIL,
+                  //usuario.FOTO
+              )
+          );
+
+          const retorno = new ListagemUsuariosDTO(ListaRetorno);
+
+
+          return retorno
+          }
+        catch(error){
+            throw new InternalServerErrorException('Erro inesperado no servidor : '+error.message);
+        }
+    }
 }
