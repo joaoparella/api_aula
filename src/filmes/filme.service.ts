@@ -7,6 +7,10 @@ import {v4 as uuid} from 'uuid';
 import { alteraFilmeDTO } from "./dto/alteraFilme.dto";
 import { GENERO } from "src/genero/genero.entity";
 import { GeneroService } from "src/genero/genero.service";
+import { FILME_PESSOAService } from "src/filme_pessoa/filme_pessoa.service";
+import { PessoaService } from "src/pessoa/pessoa.service";
+import { atorFilmeDTO } from "./dto/atorFilme.dto";
+import { RetornoElencoDTO } from "src/filme_pessoa/dto/retornoElenco.dto";
 
 @Injectable()
 export class FilmeService {
@@ -16,7 +20,32 @@ export class FilmeService {
         @Inject('GENERO_REPOSITORY')
         private generoRepository: Repository<GENERO>,
         private generoService: GeneroService,
+        private readonly filmeAtorService:  FILME_PESSOAService,    
+        private readonly atorService:  PessoaService,
     ) {}
+
+
+    async addAtor(dados: atorFilmeDTO): Promise<RetornoPadraoDTO> {
+        const filme = await this.localizaID(dados.IDFILME);
+        const ator = await this.atorService.localizarID(dados.IDATOR);
+        
+        return this.filmeAtorService.inserir(filme,ator,dados.FUNCAO);    
+    }
+
+    async removeAtor(dados: atorFilmeDTO): Promise<RetornoPadraoDTO> {
+        const filme = await this.localizaID(dados.IDFILME);
+        const ator = await this.atorService.localizarID(dados.IDATOR);
+        
+        return this.filmeAtorService.remover(filme,ator);
+    }
+
+    async listarAtor(idfilme: string): Promise<RetornoElencoDTO> {
+        const filme = await this.localizaID(idfilme);
+        
+        return this.filmeAtorService.listarElenco(filme);
+    }
+
+
 
     async inserir(dados: criaFilmeDTO): Promise<RetornoPadraoDTO> {
         let filme = new FILME();

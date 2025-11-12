@@ -9,7 +9,7 @@ export class CriaUsuarioDTO {
   @IsString()
   @IsNotEmpty()
   @EmailUnico({message: 'Email já cadastrado'})
-  @ApiPropertyOptional({example: 'joaosilva@joao.com.br',
+  @ApiProperty({example: 'joaosilva@joao.com.br',
                 description: 'Email do usuário, deve ser único'}
   )
   EMAIL: string;
@@ -17,7 +17,7 @@ export class CriaUsuarioDTO {
   @MinLength(6,{message: 'A senha deve ter no mínimo 6 caracteres'})
   @IsNotEmpty()
   @IsString()
-  @ApiPropertyOptional({example: 'senha123',  
+  @ApiProperty({example: 'senha123',  
                 description: 'Senha do usuário, deve ter no mínimo 6 caracteres, deve ser forte'}
   )
   @SenhaForte({message: 'A senha deve ser mais forte'})
@@ -25,20 +25,20 @@ export class CriaUsuarioDTO {
 
   @IsNotEmpty({message: 'Cidade não pode ser vazia'})
   @IsString()
-  @ApiPropertyOptional({example: 'São Paulo',   
+  @ApiProperty({example: 'São Paulo',   
                 description: 'Cidade do usuário'} 
   ) 
   CIDADE: string;
 
   @IsNotEmpty({message: 'Telefone não pode ser vazio'})
   @IsString()
-  @ApiPropertyOptional({example: '(11) 99999-9999',   
+  @ApiProperty({example: '(11) 99999-9999',   
                 description: 'Telefone do usuário'} 
   ) 
   TELEFONE: string;
 
   @IsNotEmpty()
-  @ApiPropertyOptional({
+  @ApiProperty({
       example: '{"NOME": "JOAO" , "NASCIMENTO": "1995-01-01", "PAIS":"BRASIL"}',
       description: "DADOS do usuário, deve ser informado um objeto com os dados descritos"
   })

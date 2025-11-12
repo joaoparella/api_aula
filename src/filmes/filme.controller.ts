@@ -8,6 +8,8 @@ import { alteraFilmeDTO } from "./dto/alteraFilme.dto";
 import { ListaFilmeDTO, ListagemFilmesDTO } from "./dto/listaFilme.dto";
 import { FilmeService } from "./filme.service";
 import { RetornoPadraoDTO } from "src/dto/retorno.dto";
+import { atorFilmeDTO } from "./dto/atorFilme.dto";
+import { RetornoElencoDTO } from "src/filme_pessoa/dto/retornoElenco.dto";
 
 @ApiTags('filme')
 //decorator responsável por definir que essa classe é um controller, dentro do parenteses é necessário informar o URL desse controller
@@ -88,5 +90,21 @@ export class FilmeController{
 
 
         return retorno
+    }
+
+
+    @Post('/ator/')
+    async addAtor( @Body() dados: atorFilmeDTO):Promise<RetornoPadraoDTO>{
+        return this.filmeService.addAtor(dados);        
+    }
+
+    @Delete('/ator/')
+    async removeAtor( @Body() dados: atorFilmeDTO):Promise<RetornoPadraoDTO>{
+        return this.filmeService.removeAtor(dados);        
+    }
+
+    @Get('/ator/:id')
+    async listaElencoFilme( @Param('id') id: string):Promise<RetornoElencoDTO>{
+        return this.filmeService.listarAtor(id);        
     }
 }

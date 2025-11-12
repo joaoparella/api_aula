@@ -9,16 +9,23 @@ import { FilmeService } from './filme.service';
 import { generoProviders } from 'src/genero/genero.provider';
 import { GeneroService } from 'src/genero/genero.service';
 import { GeneroValidator } from 'src/genero/validacao/genero.validator';
+import { pessoaProviders } from 'src/pessoa/pessoa.provider';
+import { PessoaService } from 'src/pessoa/pessoa.service';
+import { filme_pessoaProviders } from 'src/filme_pessoa/filme_pessoa.provider';
+import { FILME_PESSOAService } from 'src/filme_pessoa/filme_pessoa.service';
 
 @Module({  
   imports: [DatabaseModule],
   controllers: [FilmeController],  
-  providers: [
+  providers:  [
     ...filmeProviders,
     FilmeService,
+    ...pessoaProviders,
+    PessoaService,
+    ...filme_pessoaProviders,
+    FILME_PESSOAService,
     ...generoProviders,
     GeneroService,
-    GeneroValidator,
-  ],
+    ],
 })
 export class FilmeModule {}
