@@ -20,7 +20,7 @@ export class FilesController {
     async retornaArquivo(@Param('imgid') image: string, @Res() res) {
         let img = await this.fileService.localizar(image);
         if (!img) {
-            return res.status(404).send('Imagem não encontrada');
+            return res.sendFile("padrao.png", { root: './upload/' });;
         }
         return res.sendFile(img.URL, { root: './upload/' });
     }
